@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora INCES</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            margin: 0; padding: 5px;
+            background-color: transparent;
+            display: flex; justify-content: center;
+        }
+        .resistor-container {
+            width: 100%; max-width: 380px;
+            background: white; border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0; overflow: hidden;
+        }
+        .resistor-body {
+            background: linear-gradient(180deg, #f3d9b1 0%, #e6c18a 100%);
+            position: relative; height: 34px; width: 160px;
+            border-radius: 8px; border: 2px solid #d4a373;
+            display: flex; justify-content: space-between;
+            padding: 0 15px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .band { width: 10px; height: 100%; transition: all 0.3s ease; }
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat; background-position: right 0.5rem center;
+            background-size: 1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="resistor-container">
+        <div class="bg-[#0f172a] p-3 text-white flex items-center gap-3">
+            <div class="bg-sky-500 p-1.5 rounded-lg text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 12h10"/><path d="M12 7v10"/></svg>
+            </div>
+            <div>
+                <h1 class="text-xs font-extrabold uppercase leading-none">INCES Electrónica</h1>
+                <p class="text-[9px] text-sky-400 font-bold uppercase tracking-widest">Código de Colores</p>
+            </div>
+        </div>
+
+        <div class="p-4 space-y-4">
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 flex flex-col items-center">
+                <div class="relative w-full flex items-center justify-center mb-4">
+                    <div class="absolute w-full h-1 bg-slate-300 rounded-full"></div>
+                    <div class="resistor-body items-center z-10">
+                        <div id="b1" class="band"></div>
+                        <div id="b2" class="band"></div>
+                        <div id="b3" class="band"></div>
+                        <div id="b4" class="band ml-3"></div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Valor Nominal</span>
+                    <div id="res-val" class="text-3xl font-black text-slate-800">1 kΩ</div>
+                    <div id="res-tol" class="text-[9px] font-bold text-slate-500 uppercase">±5%</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1">
+                    <label class="text-[9px] font-bold text-slate-500 uppercase">Banda 1</label>
+                    <select id="s1" onchange="update()" class="w-full text-xs font-semibold p-2 bg-white border-2 border-slate-100 rounded-lg focus:border-sky-500 outline-none"></select>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[9px] font-bold text-slate-500 uppercase">Banda 2</label>
+                    <select id="s2" onchange="update()" class="w-full text-xs font-semibold p-2 bg-white border-2 border-slate-100 rounded-lg focus:border-sky-500 outline-none"></select>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[9px] font-bold text-slate-500 uppercase">Multiplicador</label>
+                    <select id="s3" onchange="update()" class="w-full text-xs font-semibold p-2 bg-white border-2 border-slate-100 rounded-lg focus:border-sky-500 outline-none"></select>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[9px] font-bold text-slate-500 uppercase">Tolerancia</label>
+                    <select id="s4" onchange="update()" class="w-full text-xs font-semibold p-2 bg-white border-2 border-slate-100 rounded-lg focus:border-sky-500 outline-none"></select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const colors = [
+            { n: 'Negro', v: 0, m: 1, x: '#000000' },
+            { n: 'Marrón', v: 1, m: 10, x: '#8B4513' },
+            { n: 'Rojo', v: 2, m: 100, x: '#FF0000' },
+            { n: 'Naranja', v: 3, m: 1000, x: '#FFA500' },
+            { n: 'Amarillo', v: 4, m: 10000, x: '#FFFF00' },
+            { n: 'Verde', v: 5, m: 100000, x: '#008000' },
+            { n: 'Azul', v: 6, m: 1000000, x: '#0000FF' },
+            { n: 'Violeta', v: 7, m: 10000000, x: '#EE82EE' },
+            { n: 'Gris', v: 8, m: 100000000, x: '#808080' },
+            { n: 'Blanco', v: 9, m: 1000000000, x: '#FFFFFF' }
+        ];
+
+        const tols = [
+            { n: 'Marrón (1%)', v: '1%', x: '#8B4513' },
+            { n: 'Rojo (2%)', v: '2%', x: '#FF0000' },
+            { n: 'Dorado (5%)', v: '5%', x: '#FFD700' },
+            { n: 'Plata (10%)', v: '10%', x: '#C0C0C0' }
+        ];
+
+        function init() {
+            const ss = [document.getElementById('s1'), document.getElementById('s2'), document.getElementById('s3')];
+            ss.forEach((s, idx) => {
+                colors.forEach((c, i) => {
+                    const opt = document.createElement('option');
+                    opt.value = i; opt.text = c.n;
+                    if((idx===0 && i===1) || (idx===1 && i===0) || (idx===2 && i===2)) opt.selected = true;
+                    s.add(opt);
+                });
+            });
+            const s4 = document.getElementById('s4');
+            tols.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.v; opt.text = t.n; opt.dataset.hex = t.x;
+                if(t.v === '5%') opt.selected = true;
+                s4.add(opt);
+            });
+            update();
+        }
+
+        function update() {
+            const v1 = parseInt(document.getElementById('s1').value);
+            const v2 = parseInt(document.getElementById('s2').value);
+            const v3 = parseInt(document.getElementById('s3').value);
+            const tSel = document.getElementById('s4');
+            const tHex = tSel.options[tSel.selectedIndex].dataset.hex;
+
+            document.getElementById('b1').style.backgroundColor = colors[v1].x;
+            document.getElementById('b2').style.backgroundColor = colors[v2].x;
+            document.getElementById('b3').style.backgroundColor = colors[v3].x;
+            document.getElementById('b4').style.backgroundColor = tHex;
+
+            let val = (colors[v1].v * 10 + colors[v2].v) * colors[v3].m;
+            let res = val + " Ω";
+            if (val >= 1000000) res = (val/1000000).toLocaleString() + " MΩ";
+            else if (val >= 1000) res = (val/1000).toLocaleString() + " kΩ";
+
+            document.getElementById('res-val').innerText = res;
+            document.getElementById('res-tol').innerText = "±" + tSel.value;
+        }
+        window.onload = init;
+    </script>
+</body>
+</html>
